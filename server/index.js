@@ -1,17 +1,26 @@
-const express = require("express");
+const http = require("http");
+var fs = require('fs');  // file system
+var rstream = fs.createWriteStream('./test.md');
 
-let app = express();
-
-
-app.post('/upload', (req, res, next) => {
+function onRequest(req, res) {
   console.log("JENNY INSIDE SERVER");
   console.log(Object.keys(req));
   console.log(req.headers);
-  console.log(req.body);
-  res.end("success");
-})
+  console.log("---------")
+  console.log("files: ", req.files);
+  console.log("body: ", req.body);
+  // console.log("file: ", req.connection);
+  res.write("success")
+  
 
+  // rstream
+  // .on('data', function (chunk) {
+  //   dataLength += chunk.length;
+  // })
+  // .on('end', function () {  // done
+  //   console.log('The length was:', dataLength);
+  // });
+  // res.end();
+}
 
-app.listen(3001, () => {
-  console.log("Searver on 3001");
-})
+http.createServer(onRequest).listen(3001);

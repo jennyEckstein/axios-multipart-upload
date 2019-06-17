@@ -1,34 +1,39 @@
-const express = require("express");
+const http = require("http");
 const FormData = require('form-data');
-const fs = require('fs');
+const concat = require("concat-stream")
 const axios = require('axios');
-let app = express();
+const fs = require('fs');
 
-// https://github.com/axios/axios/issues/318
-
-app.listen(3000, () => {
-  console.log("Client on 3000");
-})
-
-
-app.get('/', (req, res, next) => {
+async function onRequest(req, res) {
   try {
-
-    // const formData = new FormData();
-    // formData.append('file', './README.md');
+    // console.log("JENNY RES: ", req);
+    const fd = new FormData();
+    // fd.append('jennyFile', './README.md');
+    fd.append("jennyFile", fs.createReadStream('./README.md'));
+    fd.append("jennyFile1", fs.createReadStream('./README1.md'));
     // const config = { headers: { 'Content-Type': 'multipart/form-data' } };
 
-    const b64 = base64Img.base64Sync('./test.jpg').split('base64,')[1]
-    const form = new FormData()
-    form.append('b64_data', b64)
-    const headers = form.getHeaders()
+    // const b64 = base64Img.base64Sync('./test.jpg').split('base64,')[1]
+    // const form = new FormData()
+    // form.append('b64_data', b64)
+    // const headers = form.getHeaders()
 
-    const result = axios.post(
-      'http://localhost:3001/upload',
-      formData);
-    res.send("success1")
+    fd.pipe(concat({ encoding: 'buffer' }, async data => {
+      const request = await axios.post(
+        'http://localhost:3001',
+        data,
+        {
+          headers: fd.getHeaders()
+        });
+        console.log("request: ", request);
+    }))
+    console.log("JENNY FORM DATA: ", fd);
+    // console.log("JENNY : ", result.data);
+    // res.end();
   } catch (error) {
     console.log("JENNY ERROR", error);
   }
+}
 
-});
+
+http.createServer(onRequest).listen(3000);
