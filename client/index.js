@@ -1,50 +1,20 @@
-const http = require("http");
-const FormData = require('form-data');
-const concat = require("concat-stream")
-const axios = require('axios');
-const fs = require('fs');
-const request = require("request");
-var wstream = fs.createWriteStream('./test.md');
+var request = require('request');
+var fs = require('fs');
 
-async function onRequest(req, res) {
-  try {
-    console.log("JENNY req.body: ", req);
-    // req.pipe(wstream);
-    req
-    .pipe(request.post('http://localhost:3002/'))
-    .pipe(res);
+var r = request.post("http://localhost:3000/");
+// See http://nodejs.org/api/stream.html#stream_new_stream_readable_options
+// for more information about the highWaterMark
+// Basically, this will make the stream emit smaller chunks of data (ie. more precise upload state)
+var upload = fs.createReadStream('cat.jpg');
 
-    req.on('end', () => {
-      console.log('END?');
-    });
-    return;
-    const fd = new FormData();
-    // fd.append('jennyFile', './README.md');
-    // fd.append("jennyFile", fs.createReadStream('./README.md'));
-    // fd.append("jennyFile1", fs.createReadStream('./README1.md'));
-    // const config = { headers: { 'Content-Type': 'multipart/form-data' } };
+upload.pipe(r);
 
-    // const b64 = base64Img.base64Sync('./test.jpg').split('base64,')[1]
-    // const form = new FormData()
-    // form.append('b64_data', b64)
-    // const headers = form.getHeaders()
+var upload_progress = 0;
+upload.on("data", function (chunk) {
+  upload_progress += chunk.length
+  console.log("Uploading Data: ", new Date(), upload_progress);
+})
 
-    fd.pipe(concat({ encoding: 'buffer' }, async data => {
-      const request = await axios.post(
-        'http://localhost:3002',
-        data,
-        {
-          headers: fd.getHeaders()
-        });
-        console.log("request: ", request);
-    }))
-    console.log("JENNY FORM DATA: ", fd);
-    // console.log("JENNY : ", result.data);
-    // res.end();
-  } catch (error) {
-    console.log("JENNY ERROR", error);
-  }
-}
-
-
-http.createServer(onRequest).listen(3010);
+upload.on("end", function (res) {
+  console.log('Finished');
+})
