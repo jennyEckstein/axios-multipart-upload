@@ -4,6 +4,7 @@ var express = require('express');
 var app = express();
 app.post('/', function (req, res, next) {
   console.log("HERE")
+  req.pipe(process.stdout);
   req.pipe(fs.createWriteStream('./cat.jpg'));
   req.on('end', next);
 });
