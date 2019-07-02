@@ -5,7 +5,7 @@ var app = express();
 app.post('/', function (req, res, next) {
   console.log("HERE")
   req.pipe(process.stdout);
-  req.pipe(fs.createWriteStream('./cat.jpg'));
+  req.pipe(fs.createWriteStream('./cat4.jpg'));
   req.on('end', next);
 });
 
